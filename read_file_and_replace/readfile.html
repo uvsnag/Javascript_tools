@@ -3,84 +3,122 @@
 <title>...</title>
 
 <head>
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="style/style.css">
-    <script src="script/script.js" defer></script> -->
 </head>
 <style>
-    /* body {background-color: powderblue;}
-    h1   {color: blue;}
-    p    {color: red;} */
+    .option {
+        padding: 14px 16px;
+        border: 3px solid #297e07;
+    }
  </style>
 <body>
-    <div>
+    <div class='option'>
         <div>
-        <div id="rdTypeInput">
-            <input type="radio" id="file" name="typeInput" value="file"> File
-            <input type="radio" id="text" name="typeInput" value="text" checked="checked"> Text 
-          </div>
-        <input type="file" accept="text/plain" name="inputfile" id="inputfile">
+            <div id="rdTypeInput">
+                <input type="radio" id="rdFile" name="typeInput" value="file"> File
+                <input type="radio" id="rdText" name="typeInput" value="text" checked="checked"> Text
+                <br>
+                <!-- <input type="text" id="splitInput"> -->
+                <br>
+                <input type="text" id="splitRegex">
+                <br>
+                <input type="text" id="splitChildRegex">
+            </div>
+        </div>
     </div>
-    <br>
-        <textarea  style='width: 100px; height: 200px;' id = 'textRepl'></textarea>
+    <div>
+            <input type="file" accept="text/plain" name="inputfile" id="inputfile">
+            <br>
+            <textarea style='width: 400px; height: 400px;;' id='txtIntput'></textarea>
+            <br>
+        <textarea style='width: 100px; height: 200px;' id='regex'></textarea>
         <br>
-        <textarea  style='width: 400px; height: 400px;;' id = 'input'></textarea>
-        <input type = 'submit'>
+        <input type='submit' id='execute'>
         <p>result:</p>
-        <textarea  style='width: 400px; height: 400px;' id = 'output'></textarea>
+        <textarea style='width: 400px; height: 400px;' id='output'></textarea>
 
     </div>
     <script>
+        document.getElementById('regex').textContent = 'a^g';
+        // document.getElementById('splitInput').value  = '\n';
+        document.getElementById('splitRegex').value  = '`';
+        document.getElementById('splitChildRegex').value  = '^';
+        
+        // var split = document.getElementById('splitInput').value;
+        var trSplitLine = document.getElementById('splitRegex').value;
+        var trSplitElement = document.getElementById('splitChildRegex').value;
         var split ='\n';
-        var trSplitLine ='`';
-        var trSplitElement ='^';
+        // var trSplitLine ='`';
+        // var trSplitElement ='^';
+
+        var rdFile = document.getElementById('rdFile');
+        var rdText = document.getElementById('rdText');
+        var inputfile = document.getElementById('inputfile');
+        var txtIntput = document.getElementById('txtIntput');
         
+        inputfile.style.display = "none";
+
+        var executeBtn = document.getElementById('execute');
         
-        
-        document.getElementById('textRepl').textContent = 'a^g';
-        var file = document.getElementById('inputfile');
-        // file.addEventListener('change', () => {
-        var ele = document.getElementsByName('typeInput');
-        var typeInput =''  ; 
-            for(i = 0; i < ele.length; i++) {
-                if(ele[i].checked)
-                typeInput = ele[i].value;
-            }
-        
-            // if(typeInput=='file'){
-                file.addEventListener('change', () => {
-                    var textRepl = document.getElementById('textRepl').value;
+            var ele = document.getElementsByName('typeInput');
+            
+            executeBtn.addEventListener('click', () => {
                     var txtArr = [];
-                    var fr = new FileReader();
-                    fr.onload = function () {
-                        // By lines
-                        var lines = this.result.split(split);
-                        for (var line = 0; line < lines.length; line++) {
-                            if(textRepl != ''){
-        
-                                var trLines = textRepl.split(trSplitLine);
-                                var trResult = lines[line];
-                                for (var trLine = 0; trLine < trLines.length; trLine++) {
-                                    var trElements= trLines[trLine].split(trSplitElement);
-                                    trResult=trResult.replaceAll(trElements[0],trElements[1]);
-                                }
-                                txtArr.push(trResult);
-                            }
-        
-                            // txtArr = [...txtArr, ...(lines[line].split(split))];
+                    var typeInput = '';
+                    var regex = document.getElementById('regex').value;
+
+                    for (i = 0; i < ele.length; i++) {
+                        if (ele[i].checked)
+                            typeInput = ele[i].value;
+                    }
+                    if (typeInput == 'file') {
+                        var file = document.getElementById('inputfile');
+                        var fr = new FileReader();
+                        fr.onload = function () {
+                            var lineInputs = this.result.split(split);
+                            txtArr = processingReplace(lineInputs, regex, txtArr);
                         }
-                    }
-                    fr.onloadend = function () {
-                        console.log(txtArr);
+                        fr.onloadend = function () {
+                            console.log(txtArr);
+                            document.getElementById('output').textContent = txtArr.join('\n');
+                        }
+
+                        fr.readAsText(file.files[0]);
+                    } else {
+                        var txtIntput = document.getElementById('txtIntput').value;
+
+                        var lineInputs = txtIntput.split(split);
+                        txtArr = processingReplace(lineInputs, regex, txtArr);
                         document.getElementById('output').textContent = txtArr.join('\n');
+
                     }
-        
-                    fr.readAsText(file.files[0]);
                 })
 
-            // }else{
+        function processingReplace(lineInputs, regex, txtArr) {
+                for (var i = 0; i < lineInputs.length; i++) {
+                    if (regex != '') {
 
-            // }
+                        var trLines = regex.split(trSplitLine);
+                        var trResult = lineInputs[i];
+                        for (var trLine = 0; trLine < trLines.length; trLine++) {
+                            var trElements = trLines[trLine].split(trSplitElement);
+                            trResult = trResult.replaceAll(trElements[0], trElements[1]);
+                        }
+                        txtArr.push(trResult);
+                    }
+                }
+                return txtArr;
+            }
+      
+        rdText.addEventListener('click', () => {
+            inputfile.style.display = "none";
+            txtIntput.style.display = "block";
+
+        });
+        rdFile.addEventListener('click', () => {
+            inputfile.style.display = "block";
+            txtIntput.style.display = "none";
+
+        })
     </script>
 </body>
 
