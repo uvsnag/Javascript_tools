@@ -5,110 +5,135 @@
 <head>
 </head>
 <style>
-    .option {
+    .block {
         padding: 14px 16px;
-        border: 3px solid #297e07;
+        border: 3px solid #000000;
     }
- </style>
+
+    .option-right {
+        width: 50%;
+        float: right;
+    }
+
+    .option-left {
+        float: left;
+        width: 47%;
+    }
+
+    .dataInput {
+        overflow: hidden;
+        /* padding: 14px 16px;
+        border: 3px solid #297e07; */
+    }
+
+    .dataInput textarea,
+    #output {
+        width: 100%;
+        height: 400px;
+    }
+</style>
+
 <body>
-    <div class='option'>
+    <div class='option block'>
         <div>
             <div id="rdTypeInput">
                 <input type="radio" id="rdFile" name="typeInput" value="file"> File
                 <input type="radio" id="rdText" name="typeInput" value="text" checked="checked"> Text
-                <br>
-                <!-- <input type="text" id="splitInput"> -->
-                <br>
-                <input type="text" id="splitRegex">
-                <br>
-                <input type="text" id="splitChildRegex">
             </div>
+            <br>
+            <!-- <input type="text" id="splitInput"> -->
+            <br>
+            <input type="text" id="splitRegex">
+            <br>
+            <input type="text" id="splitChildRegex">
         </div>
     </div>
-    <div>
+    <div class='dataInput block'>
+        <div class='option-left'>
+            <div>input</div>
             <input type="file" accept="text/plain" name="inputfile" id="inputfile">
+            <textarea id='txtIntput'></textarea>
+        </div>
+        <div class='option-right'>
+            <div>#$%^&*()</div>
+            <textarea id='regex'></textarea>
             <br>
-            <textarea style='width: 400px; height: 400px;;' id='txtIntput'></textarea>
-            <br>
-        <textarea style='width: 100px; height: 200px;' id='regex'></textarea>
-        <br>
-        <input type='submit' id='execute'>
+        </div>
+    </div>
+    <br>
+    <input type='submit' id='execute'>
+    <div class='block'>
         <p>result:</p>
-        <textarea style='width: 400px; height: 400px;' id='output'></textarea>
-
+        <textarea id='output'></textarea>
+    </div>
     </div>
     <script>
         document.getElementById('regex').textContent = 'a^g';
-        // document.getElementById('splitInput').value  = '\n';
-        document.getElementById('splitRegex').value  = '`';
-        document.getElementById('splitChildRegex').value  = '^';
-        
-        // var split = document.getElementById('splitInput').value;
-        var trSplitLine = document.getElementById('splitRegex').value;
-        var trSplitElement = document.getElementById('splitChildRegex').value;
-        var split ='\n';
-        // var trSplitLine ='`';
-        // var trSplitElement ='^';
+        document.getElementById('splitRegex').value = '`';
+        document.getElementById('splitChildRegex').value = '^';
+        var split = '\n';
 
         var rdFile = document.getElementById('rdFile');
         var rdText = document.getElementById('rdText');
         var inputfile = document.getElementById('inputfile');
         var txtIntput = document.getElementById('txtIntput');
-        
+
         inputfile.style.display = "none";
 
         var executeBtn = document.getElementById('execute');
-        
-            var ele = document.getElementsByName('typeInput');
-            
-            executeBtn.addEventListener('click', () => {
-                    var txtArr = [];
-                    var typeInput = '';
-                    var regex = document.getElementById('regex').value;
 
-                    for (i = 0; i < ele.length; i++) {
-                        if (ele[i].checked)
-                            typeInput = ele[i].value;
-                    }
-                    if (typeInput == 'file') {
-                        var file = document.getElementById('inputfile');
-                        var fr = new FileReader();
-                        fr.onload = function () {
-                            var lineInputs = this.result.split(split);
-                            txtArr = processingReplace(lineInputs, regex, txtArr);
-                        }
-                        fr.onloadend = function () {
-                            console.log(txtArr);
-                            document.getElementById('output').textContent = txtArr.join('\n');
-                        }
+        var ele = document.getElementsByName('typeInput');
 
-                        fr.readAsText(file.files[0]);
-                    } else {
-                        var txtIntput = document.getElementById('txtIntput').value;
+        executeBtn.addEventListener('click', () => {
+            var txtArr = [];
+            var typeInput = '';
+            var regex = document.getElementById('regex').value;
 
-                        var lineInputs = txtIntput.split(split);
-                        txtArr = processingReplace(lineInputs, regex, txtArr);
-                        document.getElementById('output').textContent = txtArr.join('\n');
+            for (i = 0; i < ele.length; i++) {
+                if (ele[i].checked)
+                    typeInput = ele[i].value;
+            }
+            if (typeInput == 'file') {
+                var file = document.getElementById('inputfile');
+                var fr = new FileReader();
+                fr.onload = function () {
+                    var lineInputs = this.result.split(split);
+                    txtArr = processingReplace(lineInputs, regex, txtArr);
+                }
+                fr.onloadend = function () {
+                    console.log(txtArr);
+                    document.getElementById('output').textContent = txtArr.join(split);
+                }
 
-                    }
-                })
+                fr.readAsText(file.files[0]);
+            } else {
+                var txtIntput = document.getElementById('txtIntput').value;
+
+                var lineInputs = txtIntput.split(split);
+                txtArr = processingReplace(lineInputs, regex, txtArr);
+                document.getElementById('output').textContent = txtArr.join(split);
+
+            }
+        })
 
         function processingReplace(lineInputs, regex, txtArr) {
-                for (var i = 0; i < lineInputs.length; i++) {
-                    if (regex != '') {
+            var trSplitLine = document.getElementById('splitRegex').value;
+            var trSplitElement = document.getElementById('splitChildRegex').value;
+            for (var i = 0; i < lineInputs.length; i++) {
+                if (regex != '') {
 
-                        var trLines = regex.split(trSplitLine);
-                        var trResult = lineInputs[i];
-                        for (var trLine = 0; trLine < trLines.length; trLine++) {
-                            var trElements = trLines[trLine].split(trSplitElement);
-                            trResult = trResult.replaceAll(trElements[0], trElements[1]);
-                        }
-                        txtArr.push(trResult);
+                    var trLines = regex.split(trSplitLine);
+                    var trResult = lineInputs[i];
+                    for (var trLine = 0; trLine < trLines.length; trLine++) {
+                        var trElements = trLines[trLine].split(trSplitElement);
+                        trResult = trResult.replaceAll(trElements[0], trElements[1]);
                     }
+                    txtArr.push(trResult);
                 }
-                return txtArr;
             }
-      
+            return txtArr;
+        }
+
         rdText.addEventListener('click', () => {
             inputfile.style.display = "none";
             txtIntput.style.display = "block";

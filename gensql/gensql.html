@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<title>...sql</title>
+
+<head>
+</head>
+<style>
+    .block {
+        padding: 14px 16px;
+        border: 3px solid #000000;
+    }
+
+    .option {
+        overflow: hidden;
+    }
+
+    .option-right {
+        width: 47%;
+        float: right;
+    }
+
+    .option-left {
+        float: left;
+        width: 47%;
+    }
+
+    #output,
+    #txtField {
+        width: 100%;
+        height: 400px;
+    }
+</style>
+
+<body>
+    <div class='option block'>
+        <div class='option-left'>
+            <!-- <b>Field:</b> -->
+            <textarea id='txtField'></textarea>
+            <br>
+            <!-- <b>type:</b> -->
+            <select name="cmbType" id="cmbType">
+                <option value="ddl">1</option>
+                <!-- <option value="excel">excel</option> -->
+            </select>
+            <input type="text" value='|' id="txtDataChar">
+            <input type='submit' value="Clear" id='btnCleanField'>
+            <input type='submit' value="Paste" id='btnPasteField' onclick = 'pasteData()'>
+        </div>
+        <div class='option-right'>
+            <!-- <b>sql:</b> -->
+            <input type="text" value='Name' id="txtTableName">
+            <br> <br>
+            <div>
+                <!-- <select name="cmbSql" id="cmbSql">
+                    <option value="insert">insert</option>
+                </select> -->
+
+            </div>
+            <!-- <b>Line number:</b> -->
+            <br>
+            <input type='number' value='1' id='line-number'>
+            <br> <br>
+            <div>
+                <select name="numOfCharater" id="numOfCharater">
+                    <option value="max">max</option>
+                    <option value="mid">mid</option>
+                    <option value="1">1</option>
+                </select>
+            </div> <br>
+            <div>
+                <select name="formatDate" id="formatDate">
+                    <option value="-">-</option>
+                    <option value="/">/</option>
+                </select>
+            </div> <br>
+            <input type='submit' value="exc" id='btnExecute'>
+        </div>
+    </div>
+
+    <div class='block '>
+        <input type='submit' value="Clear" id='btnClean'>
+        <input class='chkDeleteOldData' type='checkbox'>
+        <input type='submit' value="Coppy" id='btnCoppy'>
+        <!-- <p>result:</p> -->
+        <textarea id='output'></textarea>
+    </div>
+    <script>
+        var splitLineInputField = '),';
+        var indentFieldName = '\"';
+        var indentFieldLength = '(';
+        var indentComma = ',';
+        
+
+
+        var executeBtn = document.getElementById('btnExecute');
+        var btnClean = document.getElementById('btnClean');
+        var btnCleanField = document.getElementById('btnCleanField');
+        var btnCoppy = document.getElementById('btnCoppy');
+        var chkDeleteOldData = document.getElementsByClassName('chkDeleteOldData');
+
+        document.getElementById('txtField').textContent = '"FFSFD" NUMBER(3,0?fgfgfgd?),';
+
+        executeBtn.addEventListener('click', () => {
+            var sqlResult = '';
+            var txtField = document.getElementById('txtField').value;
+            var lineNumber = document.getElementById('line-number').value;
+            var cmbType = document.getElementById("cmbType").value;
+
+            if (cmbType == 'ddl') {
+                var lineInputs = txtField.split(splitLineInputField);
+                for (var i = 1; i <= lineNumber; i++) {
+                    sqlResult += genData(lineInputs) + '\n';
+                }
+                if (chkDeleteOldData[0].checked) {
+                    document.getElementById('output').textContent = sqlResult;
+                } else {
+                    document.getElementById('output').textContent += '\n' + sqlResult;
+                }
+                // document.getElementById('output').textContent += sqlResult;
+            }
+        })
+
+        function genData(lineInputs) {
+
+            var tableName = document.getElementById('txtTableName').value;
+
+            var flagComa = false;
+            var sqlResult = 'INSERT INTO ' + tableName + '(';
+            for (var i = 0; i < lineInputs.length; i++) {
+                var trLine = lineInputs[i].trim();
+                if (trLine.length > 0) {
+                    var fieldName = trLine.substring(1, trLine.lastIndexOf(indentFieldName));
+                    if (flagComa == true) {
+                        sqlResult += ', ';
+                    }
+                    flagComa = true
+                    sqlResult += fieldName;
+                }
+
+            }
+            sqlResult += ') VALUES (';
+            flagComa = false;
+            for (var j = 0; j < lineInputs.length; j++) {
+                var trLine = lineInputs[j].trim().toUpperCase();
+                var typeNumber = false;
+                if (trLine.length > 0) {
+                    var indentComData = document.getElementById('txtDataChar').value;
+                    var dataStr = '';
+                    var lengthData = 0;
+                    if (trLine.includes(indentComData)) {
+                        var orgLine = lineInputs[j].trim();
+                        dataStr = orgLine.substring(orgLine.indexOf(indentComData) + 1, orgLine.lastIndexOf(indentComData));
+                    } else {
+                        var randomTemplateStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                        if (trLine.includes('NUMBER(')) {
+                            randomTemplateStr = '0123456789';
+                            typeNumber = true;
+                        }
+                        if (trLine.includes('DATE(') || trLine.includes('TIMESTAMP(')) {
+                            dataStr = formatDate(randomDate(new Date(2012, 0, 1), new Date()));
+                        } else {
+                            if (trLine.includes(',')) {
+                                dataStr = genNuberWComman(trLine, randomTemplateStr);
+                            } else {
+                                lengthData = trLine.substring(trLine.lastIndexOf(indentFieldLength) + 1, trLine.length);
+                                dataStr = randomStr(lengthData, randomTemplateStr);
+                            }
+                        }
+
+                    }
+                    if (flagComa == true) {
+                        sqlResult += ', ';
+                    }
+                    flagComa = true
+                    sqlResult += typeNumber ? dataStr : '\'' + dataStr + '\'';
+
+
+                }
+
+            }
+            sqlResult += ');';
+
+            return sqlResult;
+        }
+
+        function genNuberWComman(trLine, randomTemplateStr) {
+            var dataStr = '';
+            var firstNumber = trLine.substring(trLine.lastIndexOf(indentFieldLength) + 1, trLine.lastIndexOf(indentComma));
+            var secondNumber = trLine.substring(trLine.lastIndexOf(indentComma) + 1, trLine.length);
+            var data1 = randomStr(firstNumber - secondNumber - 1, randomTemplateStr);
+            var data2 = randomStr(secondNumber, randomTemplateStr);
+
+            dataStr = data2 != 0 ? data1 + '.' + data2 : data1;
+
+            var numOfCharater = document.getElementById("numOfCharater").value;
+            if (numOfCharater == '1') {
+                dataStr = data1;
+            }
+            if (numOfCharater == 'mid' && data1 > 1) {
+                dataStr = dataStr.substring(1, dataStr.length);
+            }
+            return dataStr;
+        }
+        function randomStr(lengthData, randomTemplateStr) {
+            var dataStr = '';
+            var numOfCharater = document.getElementById("numOfCharater").value;
+            if (numOfCharater == 'mid' && numOfCharater > 1) {
+                lengthData = lengthData / 2;
+            }
+            if (numOfCharater == '1') {
+                lengthData = 1;
+            }
+
+            for (var i = 0; i < lengthData; i++) {
+                dataStr += randomTemplateStr.charAt(Math.floor(Math.random() * randomTemplateStr.length));
+            }
+            return dataStr;
+        }
+
+        function randomDate(start, end) {
+            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+        }
+        function formatDate(date) {
+            var formatDate = document.getElementById("formatDate").value;
+            const d = new Date(date)
+            const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d);
+            const mo = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(d);
+            const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
+            return `${ye}${formatDate}${mo}${formatDate}${da}`;
+        }
+        btnClean.addEventListener('click', () => {
+            document.getElementById('output').textContent = '';
+        })
+        btnCleanField.addEventListener('click', () => {
+            document.getElementById('txtField').value = '';
+        })
+        async function pasteData() {
+            document.getElementById('txtField').value =  await  navigator.clipboard.readText();
+        }
+        btnCoppy.addEventListener('click', () => {
+            navigator.clipboard.writeText(document.getElementById('output').value);
+        })
+    </script>
+</body>
+
+</html>
