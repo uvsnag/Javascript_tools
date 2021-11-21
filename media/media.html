@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <style>
+
+.option {
+        overflow: hidden;
+        width: 600px;
+        border: 3px solid #000000;
+        margin: 10px 10px 10px 0px;
+        padding: 10px 10px 10px 10px;
+    }
+
+    .option-right {
+        width: 47%;
+        float: right;
+    }
+
+    .option-left {
+        float: left;
+        width: 47%;
+    }
+    #tmp {
+        width: 250px;
+        height: 100px;
+    }
+    </style>
+
+<body>
+    <iframe width="420" height="315" id='iFMedia' src="">
+    </iframe> <br>
+    <input type="text" value='' id="txtSrcMedia"> <br>
+    <input type='submit' value="Load" id='btnExecute'>
+    <!-- <input type='submit' value="Pause" id='btnPause'>
+    <input type='submit' value="Play" id='btnPlay'> -->
+    <br>
+    <div class='option'>
+        <div class='option-left'>
+            <p>width:</p>
+            <input type="text" value='640' id="txtWidth">
+            <p>Height:</p>
+            <input type="text" value='390' id="txtHeight">
+            <br>
+            <input type='submit' value="Resize" id='btnResize'>
+        </div>
+        <div class='option-right'> <br>
+            <input type='submit' value="100x80" id='btnVerySmall'>
+            <input type='submit' value="320x195" id='btnSmall'>
+            <input type='submit' value="1200x700" id='btnMedium'>
+            <input type='submit' value="100%" id='btnBig'><br><br>
+            <textarea id='tmp'></textarea>
+        </div>
+    </div>
+    <br>
+    <script>
+        var iFMedia = document.getElementById('iFMedia');
+
+        var executeBtn = document.getElementById('btnExecute');
+        var btnResize = document.getElementById('btnResize');
+        var btnVerySmall = document.getElementById('btnVerySmall');
+        var btnSmall = document.getElementById('btnSmall');
+        var btnMedium = document.getElementById('btnMedium');
+        var btnBig = document.getElementById('btnBig');
+
+
+        executeBtn.addEventListener('click', () => {
+            var txtSrcMedia = document.getElementById('txtSrcMedia').value;
+            txtSrcMedia = txtSrcMedia.substring(txtSrcMedia.lastIndexOf('/') + 1, txtSrcMedia.length).trim();
+            document.getElementById('iFMedia').src = `https://www.youtube.com/embed/${txtSrcMedia}`;
+        })
+        btnResize.addEventListener('click', () => {
+            var txtWidth = document.getElementById('txtWidth').value;
+            var txtHeight = document.getElementById('txtHeight').value;
+            var txtSrcMedia = document.getElementById('txtSrcMedia').value;
+            txtSrcMedia = txtSrcMedia.substring(txtSrcMedia.lastIndexOf('/') + 1, txtSrcMedia.length).trim();
+            document.getElementById('iFMedia').setAttribute("style", `width:${txtWidth}px; height:${txtHeight}px`);
+        })
+        btnVerySmall.addEventListener('click', () => {
+            document.getElementById('iFMedia').setAttribute("style", `width:100px; height:80px`);
+        })
+        btnSmall.addEventListener('click', () => {
+            document.getElementById('iFMedia').setAttribute("style", `width:320px; height:195px`);
+        })
+        btnMedium.addEventListener('click', () => {
+            document.getElementById('iFMedia').setAttribute("style", `width:1200px; height:700px`);
+        })
+        btnBig.addEventListener('click', () => {
+            document.getElementById('iFMedia').setAttribute("style", `width:100%; height:1500px`);
+        })
+
+    </script>
+</body>
+
+</html>
