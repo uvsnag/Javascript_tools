@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
-    <style>
-
-.option {
+<style>
+    .option {
         overflow: hidden;
         width: 600px;
         border: 3px solid #000000;
@@ -19,38 +18,49 @@
         float: left;
         width: 47%;
     }
+
     #tmp {
         width: 250px;
         height: 100px;
     }
-    </style>
+</style>
 
 <body>
     <iframe width="420" height="315" id='iFMedia' src="">
     </iframe> <br>
-    <input type="text" value='' id="txtSrcMedia"> <br>
-    <input type='submit' value="Load" id='btnExecute'>
-    <!-- <input type='submit' value="Pause" id='btnPause'>
+    <div id='control'>
+        <input type="text" value='' id="txtSrcMedia"> <br>
+        <input type='submit' value="Load" id='btnExecute'>
+        <!-- <input type='submit' value="Pause" id='btnPause'>
     <input type='submit' value="Play" id='btnPlay'> -->
-    <br>
-    <div class='option'>
-        <div class='option-left'>
-            <p>width:</p>
-            <input type="text" value='640' id="txtWidth">
-            <p>Height:</p>
-            <input type="text" value='390' id="txtHeight">
-            <br>
-            <input type='submit' value="Resize" id='btnResize'>
+        <br>
+        <div class='option'>
+            <div class='option-left'>
+                <p>width:</p>
+                <input type="text" value='640' id="txtWidth">
+                <p>Height:</p>
+                <input type="text" value='390' id="txtHeight">
+                <br>
+                <input type='submit' value="Resize" id='btnResize'>
+            </div>
+            <div class='option-right'> <br>
+                <input type='submit' value="100x80" id='btnVerySmall'>
+                <input type='submit' value="320x195" id='btnSmall'>
+                <input type='submit' value="1200x700" id='btnMedium'>
+                <input type='submit' value="100%" id='btnBig'><br><br>
+                <textarea id='tmp'></textarea>
+            </div>
         </div>
-        <div class='option-right'> <br>
-            <input type='submit' value="100x80" id='btnVerySmall'>
-            <input type='submit' value="320x195" id='btnSmall'>
-            <input type='submit' value="1200x700" id='btnMedium'>
-            <input type='submit' value="100%" id='btnBig'><br><br>
-            <textarea id='tmp'></textarea>
-        </div>
+        <input type='submit' value="H" id='btnHide'>
     </div>
     <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <input type='submit' value="S" id='btnShow'>
     <script>
         var iFMedia = document.getElementById('iFMedia');
 
@@ -85,6 +95,12 @@
         })
         btnBig.addEventListener('click', () => {
             document.getElementById('iFMedia').setAttribute("style", `width:100%; height:1500px`);
+        })
+        btnHide.addEventListener('click', () => {
+            var control = document.getElementById('control').style.display = "none";
+        })
+        btnShow.addEventListener('click', () => {
+            var control = document.getElementById('control').style.display = "block";
         })
 
     </script>
