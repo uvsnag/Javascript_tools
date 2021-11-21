@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<title>json</title>
+
+<head>
+</head>
+<style>
+    .block {
+        padding: 14px 16px;
+        border: 3px solid #000000;
+    }
+
+    .option {
+        overflow: hidden;
+    }
+
+    .option-right {
+        width: 47%;
+        float: right;
+    }
+
+    .option-left {
+        float: left;
+        width: 47%;
+    }
+
+    #txtField {
+        width: 100%;
+        height: 400px;
+    }
+
+    #output,
+    #tmp {
+        width: 100%;
+        height: 1000px;
+    }
+</style>
+
+<body>
+    <div class='option block'>
+        <div class='option-left'>
+            <!-- <b>Field:</b> -->
+            <textarea id='txtField'></textarea>
+            <br>
+            <input type="text" value='|' id="txtDataChar">
+            <input type='submit' value="Clear" id='btnCleanField'>
+            <input type='submit' value="Paste" id='btnPasteField' onclick='pasteData()'>
+        </div>
+        <div class='option-right'>
+            <input type="text" value='Name' id="txtMainElementName">
+            <br>
+            <input type="text" value='2' id="txtLength">
+            <br>
+            <select name="formatDate" id="formatDate">
+                <option value="-">-</option>
+                <option value="/">/</option>
+            </select><br>
+            <input type='submit' value="exc" id='btnExecute'>
+        </div>
+    </div>
+
+    <div class='block '>
+        <input type='submit' value="Clear" id='btnClean'>
+        <input type='submit' value="Copy" id='btnCoppy'>
+        <!-- <p>result:</p> -->
+        <textarea id='output'></textarea>
+        <br><br><br>
+        <textarea id='tmp'></textarea>
+    </div>
+    <script>
+        const NEW_LINE = '\n';
+        const QUOTES = '\"';
+        const TAB = '   ';
+        const COLON = ':';
+        const COMMA = ',';
+        const END_LINE = ';';
+
+        var splitLineInputField = '\n';
+        var indentSpace = ' ';
+
+        const NUMBER_TYPES = ['Integer ', 'Long ', 'Float '];
+        const STRING_TYPES = ['String '];
+        const DATE_TYPES = ['Date ', 'Timestamp'];
+        const LIST_TYPES = ['List', 'Array'];
+
+        const COMMENT_INDENT = ['//', '/*'];
+
+        const NUMBER_IND = '1';
+        const STRING_IND = '2';
+        const DATE_IND = '3';
+        const OTHER_IND = '4';
+        const LIST_IND = '5';
+        const ALREADY_HAS_DATA = '6';
+
+
+        var executeBtn = document.getElementById('btnExecute');
+        var btnClean = document.getElementById('btnClean');
+        var btnCleanField = document.getElementById('btnCleanField');
+        var btnCoppy = document.getElementById('btnCoppy');
+
+        document.getElementById('txtField').textContent = 'private Integer inputPsnCd;4	';
+
+        executeBtn.addEventListener('click', () => {
+
+            var jsonResult = '';
+            var txtField = document.getElementById('txtField').value;
+            var lineInputs = txtField.split(splitLineInputField);
+            jsonResult += genData(lineInputs) + '\n';
+            document.getElementById('output').textContent += jsonResult;
+        })
+
+        function genData(lineInputs) {
+            var indentComData = document.getElementById('txtDataChar').value;
+            var txtMainElementName = document.getElementById('txtMainElementName').value;
+
+            var jsonResult = '{' + NEW_LINE;
+            jsonResult += TAB + QUOTES + txtMainElementName + QUOTES + COLON + '{' + NEW_LINE;
+            for (var j = 0; j < lineInputs.length; j++) {
+                var dataStr = '';
+                var trLine = lineInputs[j].trim();
+                var typeData = getTypeData(trLine);
+                if (trLine.includes(indentComData)) {
+                    var orgLine = lineInputs[j].trim();
+                    dataStr = orgLine.substring(orgLine.indexOf(indentComData) + 1, orgLine.lastIndexOf(indentComData));
+                    if (typeData == STRING_IND || typeData == DATE_IND) {
+                        dataStr = QUOTES + dataStr + QUOTES;
+                    }
+
+                    typeData = ALREADY_HAS_DATA;
+                }
+
+
+
+                if (checkType(trLine, COMMENT_INDENT)) {
+                    trLine = trLine.substring(0, trLine.indexOf('/'));
+                    trLine = trLine.trim();
+                }
+                var length = 0;
+                length = trLine.substring(trLine.lastIndexOf(END_LINE) + 1, trLine.length).trim();
+                if (length.length == 0) {
+                    length = document.getElementById('txtLength').value;
+                }
+                if (trLine.length > 0) {
+                    trLine = trLine.substring(trLine.lastIndexOf(indentSpace), trLine.lastIndexOf(END_LINE));
+                    if (trLine.trim().length > 0) {
+
+                        var randomTemplateStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+                        jsonResult += TAB + TAB + QUOTES + trLine.trim() + QUOTES + COLON
+                        if (typeData == NUMBER_IND) {
+                            randomTemplateStr = '123456789';
+                        }
+
+                        if (typeData == DATE_IND) {
+                            dataStr = QUOTES + formatDate(randomDate(new Date(2012, 0, 1), new Date())) + QUOTES;
+                        }
+                        if (typeData == STRING_IND || typeData == NUMBER_IND) {
+
+                            dataStr = randomStr(length, randomTemplateStr, typeData);
+                        }
+
+                        if (typeData == LIST_IND) {
+                            dataStr = '[' + NEW_LINE + NEW_LINE + TAB + TAB + ']';
+                        }
+
+                        if (typeData == OTHER_IND) {
+                            dataStr = 'OTHER'
+                        }
+
+                        jsonResult += dataStr.trim() + COMMA + NEW_LINE;
+
+                    }
+                }
+
+            }
+            jsonResult = jsonResult.substring(0, jsonResult.length - 2) + NEW_LINE;
+            jsonResult += TAB + '}' + NEW_LINE + '}';
+
+            return jsonResult;
+        }
+
+        function getTypeData(trLine) {
+            if (checkType(trLine, NUMBER_TYPES)) {
+                return NUMBER_IND;
+            }
+            if (checkType(trLine, STRING_TYPES)) {
+                return STRING_IND;
+            }
+            if (checkType(trLine, DATE_TYPES)) {
+                return DATE_IND;
+            }
+            if (checkType(trLine, LIST_TYPES)) {
+                return LIST_IND;
+            }
+            return OTHER_IND;
+
+        }
+        function randomStr(lengthData, randomTemplateStr, typeData) {
+            var dataStr = '';
+            for (var i = 0; i < lengthData; i++) {
+                dataStr += randomTemplateStr.charAt(Math.floor(Math.random() * randomTemplateStr.length));
+            }
+            if (typeData == STRING_IND) {
+                dataStr = QUOTES + dataStr + QUOTES;
+            }
+            return dataStr;
+        }
+
+        function randomDate(start, end) {
+            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+        }
+        function formatDate(date) {
+            var formatDate = document.getElementById("formatDate").value;
+            const d = new Date(date)
+            const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d);
+            const mo = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(d);
+            const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
+            return `${ye}${formatDate}${mo}${formatDate}${da}`;
+        }
+        function checkType(line, arrayType) {
+            for (i = 0; i < arrayType.length; i++) {
+                if (line.includes(`${arrayType[i]}`)) {
+                    return true
+                }
+            }
+            return false
+        }
+        btnClean.addEventListener('click', () => {
+            document.getElementById('output').textContent = '';
+        })
+        btnCleanField.addEventListener('click', () => {
+            document.getElementById('txtField').value = '';
+        })
+        async function pasteData() {
+            document.getElementById('txtField').value = await navigator.clipboard.readText();
+        }
+        btnCoppy.addEventListener('click', () => {
+            navigator.clipboard.writeText(document.getElementById('output').value);
+        })
+    </script>
+</body>
+
+</html>

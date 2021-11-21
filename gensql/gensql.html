@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<title>...sql</title>
+<title>sql</title>
 
 <head>
 </head>
@@ -24,7 +24,7 @@
         width: 47%;
     }
 
-    #output,
+    #output,#temp,
     #txtField {
         width: 100%;
         height: 400px;
@@ -80,9 +80,11 @@
     <div class='block '>
         <input type='submit' value="Clear" id='btnClean'>
         <input class='chkDeleteOldData' type='checkbox'>
-        <input type='submit' value="Coppy" id='btnCoppy'>
+        <input type='submit' value="Copy" id='btnCoppy'>
         <!-- <p>result:</p> -->
         <textarea id='output'></textarea>
+        <br><br><br>
+        <textarea id='temp'></textarea>
     </div>
     <script>
         var splitLineInputField = '),';
@@ -90,6 +92,8 @@
         var indentFieldLength = '(';
         var indentComma = ',';
         
+        const NUMBER_TYPE = ['NUMBER', 'NUMERIC', 'LONG'];
+        const DATE_TYPE = ['DATE', 'TIMESTAMP'];
 
 
         var executeBtn = document.getElementById('btnExecute');
@@ -112,9 +116,10 @@
                     sqlResult += genData(lineInputs) + '\n';
                 }
                 if (chkDeleteOldData[0].checked) {
-                    document.getElementById('output').textContent = sqlResult;
+                    document.getElementById('output').value = sqlResult;
                 } else {
-                    document.getElementById('output').textContent += '\n' + sqlResult;
+                    document.getElementById('output').value += '\n' + sqlResult;
+                    // document.getElementById('output').textContent += '\n' + sqlResult;
                 }
                 // document.getElementById('output').textContent += sqlResult;
             }
@@ -152,11 +157,11 @@
                         dataStr = orgLine.substring(orgLine.indexOf(indentComData) + 1, orgLine.lastIndexOf(indentComData));
                     } else {
                         var randomTemplateStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                        if (trLine.includes('NUMBER(')) {
-                            randomTemplateStr = '0123456789';
+                        if (checkType(trLine, NUMBER_TYPE)) {
+                            randomTemplateStr = '123456789';
                             typeNumber = true;
                         }
-                        if (trLine.includes('DATE(') || trLine.includes('TIMESTAMP(')) {
+                        if (checkType(trLine, DATE_TYPE)) {
                             dataStr = formatDate(randomDate(new Date(2012, 0, 1), new Date()));
                         } else {
                             if (trLine.includes(',')) {
@@ -228,8 +233,16 @@
             const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
             return `${ye}${formatDate}${mo}${formatDate}${da}`;
         }
+        function checkType(line, arrayType) {
+            for (i = 0; i < arrayType.length; i++) {
+                if (line.includes(`${arrayType[i]}(`)){
+                    return true
+                }
+            }
+            return false
+        }
         btnClean.addEventListener('click', () => {
-            document.getElementById('output').textContent = '';
+            document.getElementById('output').value = '';
         })
         btnCleanField.addEventListener('click', () => {
             document.getElementById('txtField').value = '';
