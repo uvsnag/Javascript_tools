@@ -70,7 +70,8 @@
         var btnSmall = document.getElementById('btnSmall');
         var btnMedium = document.getElementById('btnMedium');
         var btnBig = document.getElementById('btnBig');
-
+        // var txtWidth2 = document.getElementById('txtWidth');
+        var txtWidth = document.getElementById('txtWidth');
 
         executeBtn.addEventListener('click', () => {
             var txtSrcMedia = document.getElementById('txtSrcMedia').value;
@@ -78,11 +79,11 @@
             document.getElementById('iFMedia').src = `https://www.youtube.com/embed/${txtSrcMedia}`;
         })
         btnResize.addEventListener('click', () => {
-            var txtWidth = document.getElementById('txtWidth').value;
+            var txtWidthValue = txtWidth.value;
             var txtHeight = document.getElementById('txtHeight').value;
             var txtSrcMedia = document.getElementById('txtSrcMedia').value;
             txtSrcMedia = txtSrcMedia.substring(txtSrcMedia.lastIndexOf('/') + 1, txtSrcMedia.length).trim();
-            document.getElementById('iFMedia').setAttribute("style", `width:${txtWidth}px; height:${txtHeight}px`);
+            document.getElementById('iFMedia').setAttribute("style", `width:${txtWidthValue}px; height:${txtHeight}px`);
         })
         btnVerySmall.addEventListener('click', () => {
             document.getElementById('iFMedia').setAttribute("style", `width:100px; height:80px`);
@@ -101,6 +102,9 @@
         })
         btnShow.addEventListener('click', () => {
             var control = document.getElementById('control').style.display = "block";
+        })
+        txtWidth.addEventListener('change', () => {
+            document.getElementById('txtHeight').value=txtWidth.value*0.7;
         })
 
     </script>
