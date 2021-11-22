@@ -60,6 +60,12 @@
     <br>
     <br>
     <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
     <input type='submit' value="S" id='btnShow'>
     <script>
         var iFMedia = document.getElementById('iFMedia');
@@ -75,8 +81,13 @@
 
         executeBtn.addEventListener('click', () => {
             var txtSrcMedia = document.getElementById('txtSrcMedia').value;
-            txtSrcMedia = txtSrcMedia.substring(txtSrcMedia.lastIndexOf('/') + 1, txtSrcMedia.length).trim();
-            document.getElementById('iFMedia').src = `https://www.youtube.com/embed/${txtSrcMedia}`;
+            var url=txtSrcMedia;
+            if(txtSrcMedia.indexOf('|')!=0){
+                url = 'https://www.youtube.com/embed/' + txtSrcMedia.substring(txtSrcMedia.lastIndexOf('/') + 1, txtSrcMedia.length).trim();
+            }else{
+                url= url.substring(1, url.length);
+            }
+            document.getElementById('iFMedia').src = url;
         })
         btnResize.addEventListener('click', () => {
             var txtWidthValue = txtWidth.value;

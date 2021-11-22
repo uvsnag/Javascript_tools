@@ -24,7 +24,8 @@
         width: 47%;
     }
 
-    #output,#temp,
+    #output,
+    #temp,
     #txtField {
         width: 100%;
         height: 400px;
@@ -34,21 +35,24 @@
 <body>
     <div class='option block'>
         <div class='option-left'>
-            <!-- <b>Field:</b> -->
+            <b>Field:</b>
             <textarea id='txtField'></textarea>
             <br>
-            <!-- <b>type:</b> -->
+            <b>type:</b>
             <select name="cmbType" id="cmbType">
                 <option value="ddl">1</option>
                 <!-- <option value="excel">excel</option> -->
             </select>
             <input type="text" value='|' id="txtDataChar">
             <input type='submit' value="Clear" id='btnCleanField'>
-            <input type='submit' value="Paste" id='btnPasteField' onclick = 'pasteData()'>
+            <input type='submit' value="Paste" id='btnPasteField' onclick='pasteData()'>
         </div>
         <div class='option-right'>
-            <!-- <b>sql:</b> -->
+            <b>sql:</b><br>
             <input type="text" value='Name' id="txtTableName">
+            <br>
+            <b>Default Value Int:</b><br>
+            <input type="text" value='9' id="txtDfValueInt">
             <br> <br>
             <div>
                 <!-- <select name="cmbSql" id="cmbSql">
@@ -56,7 +60,7 @@
                 </select> -->
 
             </div>
-            <!-- <b>Line number:</b> -->
+            <b>Line number:</b>
             <br>
             <input type='number' value='1' id='line-number'>
             <br> <br>
@@ -87,13 +91,16 @@
         <textarea id='temp'></textarea>
     </div>
     <script>
-        var splitLineInputField = '),';
+        var splitLineInputField = '^';
         var indentFieldName = '\"';
         var indentFieldLength = '(';
+        var indentFieldLengthEnd = ')';
         var indentComma = ',';
-        
-        const NUMBER_TYPE = ['NUMBER', 'NUMERIC', 'LONG'];
-        const DATE_TYPE = ['DATE', 'TIMESTAMP'];
+        var indentSpace = ' ';
+
+        const NUMBER_TYPE = [' NUMBER', ' NUMERIC', ' LONG', ' INT', ' INTEGER'];
+        const DATE_TYPE = [' DATE', ' TIMESTAMP'];
+        const NOT_NULL = ['NOT NULL'];
 
 
         var executeBtn = document.getElementById('btnExecute');
@@ -111,6 +118,7 @@
             var cmbType = document.getElementById("cmbType").value;
 
             if (cmbType == 'ddl') {
+                txtField = txtField.replaceAll('\n', splitLineInputField)
                 var lineInputs = txtField.split(splitLineInputField);
                 for (var i = 1; i <= lineNumber; i++) {
                     sqlResult += genData(lineInputs) + '\n';
@@ -134,7 +142,8 @@
             for (var i = 0; i < lineInputs.length; i++) {
                 var trLine = lineInputs[i].trim();
                 if (trLine.length > 0) {
-                    var fieldName = trLine.substring(1, trLine.lastIndexOf(indentFieldName));
+                    var fieldName = trLine.substring(0, trLine.indexOf(indentSpace));
+                    fieldName = fieldName.replaceAll(indentFieldName, '');
                     if (flagComa == true) {
                         sqlResult += ', ';
                     }
@@ -148,7 +157,9 @@
             for (var j = 0; j < lineInputs.length; j++) {
                 var trLine = lineInputs[j].trim().toUpperCase();
                 var typeNumber = false;
+                var notNull = false;
                 if (trLine.length > 0) {
+
                     var indentComData = document.getElementById('txtDataChar').value;
                     var dataStr = '';
                     var lengthData = 0;
@@ -156,18 +167,31 @@
                         var orgLine = lineInputs[j].trim();
                         dataStr = orgLine.substring(orgLine.indexOf(indentComData) + 1, orgLine.lastIndexOf(indentComData));
                     } else {
+                        if (checkType(trLine, NOT_NULL)) {
+                            notNull = true;
+                            trLine = replaceArr(trLine, NOT_NULL, '');
+                        }
+                        trLine = trLine.trim();
+                        if (trLine.substring(trLine.length - 1, trLine.length) != indentComma) {
+                            trLine = trLine + indentComma;
+                        }
                         var randomTemplateStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
                         if (checkType(trLine, NUMBER_TYPE)) {
                             randomTemplateStr = '123456789';
                             typeNumber = true;
+                            lengthData = document.getElementById('txtDfValueInt').value;
                         }
                         if (checkType(trLine, DATE_TYPE)) {
                             dataStr = formatDate(randomDate(new Date(2012, 0, 1), new Date()));
                         } else {
-                            if (trLine.includes(',')) {
+                            if (trLine.split(",").length - 1 == 2) {
                                 dataStr = genNuberWComman(trLine, randomTemplateStr);
                             } else {
-                                lengthData = trLine.substring(trLine.lastIndexOf(indentFieldLength) + 1, trLine.length);
+
+                                if (lengthData == 0) {
+                                    trLine = trLine.trim();
+                                    lengthData = trLine.substring(trLine.lastIndexOf(indentFieldLength) + 1, trLine.indexOf(indentFieldLengthEnd));
+                                }
                                 dataStr = randomStr(lengthData, randomTemplateStr);
                             }
                         }
@@ -190,8 +214,8 @@
 
         function genNuberWComman(trLine, randomTemplateStr) {
             var dataStr = '';
-            var firstNumber = trLine.substring(trLine.lastIndexOf(indentFieldLength) + 1, trLine.lastIndexOf(indentComma));
-            var secondNumber = trLine.substring(trLine.lastIndexOf(indentComma) + 1, trLine.length);
+            var firstNumber = trLine.substring(trLine.lastIndexOf(indentFieldLength) + 1, trLine.indexOf(indentComma));
+            var secondNumber = trLine.substring(trLine.indexOf(indentComma) + 1, trLine.indexOf(indentFieldLengthEnd));
             var data1 = randomStr(firstNumber - secondNumber - 1, randomTemplateStr);
             var data2 = randomStr(secondNumber, randomTemplateStr);
 
@@ -235,11 +259,18 @@
         }
         function checkType(line, arrayType) {
             for (i = 0; i < arrayType.length; i++) {
-                if (line.includes(`${arrayType[i]}(`)){
+                if (line.includes(`${arrayType[i]}`)) {
                     return true
                 }
             }
             return false
+        }
+        function replaceArr(line, arrayType, valRpl) {
+            for (i = 0; i < arrayType.length; i++) {
+                line = line.replaceAll(`${arrayType[i]}`, valRpl);
+
+            }
+            return line;
         }
         btnClean.addEventListener('click', () => {
             document.getElementById('output').value = '';
@@ -248,7 +279,7 @@
             document.getElementById('txtField').value = '';
         })
         async function pasteData() {
-            document.getElementById('txtField').value =  await  navigator.clipboard.readText();
+            document.getElementById('txtField').value = await navigator.clipboard.readText();
         }
         btnCoppy.addEventListener('click', () => {
             navigator.clipboard.writeText(document.getElementById('output').value);
