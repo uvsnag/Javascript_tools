@@ -3,38 +3,9 @@
 <title>json</title>
 
 <head>
+    <link rel="stylesheet" href="../common/style.css">
+    <script src="../common/common.js" defer></script>
 </head>
-<style>
-    .block {
-        padding: 14px 16px;
-        border: 3px solid #000000;
-    }
-
-    .option {
-        overflow: hidden;
-    }
-
-    .option-right {
-        width: 47%;
-        float: right;
-    }
-
-    .option-left {
-        float: left;
-        width: 47%;
-    }
-
-    #txtField {
-        width: 100%;
-        height: 400px;
-    }
-
-    #output,
-    #tmp {
-        width: 100%;
-        height: 1000px;
-    }
-</style>
 
 <body>
     <div class='option block'>
@@ -49,12 +20,20 @@
         <div class='option-right'>
             <input type="text" value='Name' id="txtMainElementName">
             <br>
+            <P>Default Length:</p> 
             <input type="text" value='2' id="txtLength">
             <br>
+            <br>
             <select name="formatDate" id="formatDate">
-                <option value="-">-</option>
-                <option value="/">/</option>
-            </select><br>
+                <option value="yyyy-mm-dd">yyyy-mm-dd</option>
+                <option value="yyyy/mm/dd">yyyy/mm/dd</option>
+                <option value="yyyymmdd">yyyymmdd</option>
+                <option value="dd-mm-yyyy">dd-mm-yyyy</option>
+                <option value="dd/mm/yyyy">dd/mm/yyyy</option>
+                <option value="ddmmyyyy">ddmmyyyy</option>
+            </select>
+            <br>
+            <br>
             <input type='submit' value="exc" id='btnExecute'>
         </div>
     </div>
@@ -206,25 +185,6 @@
             return dataStr;
         }
 
-        function randomDate(start, end) {
-            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-        }
-        function formatDate(date) {
-            var formatDate = document.getElementById("formatDate").value;
-            const d = new Date(date)
-            const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d);
-            const mo = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(d);
-            const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
-            return `${ye}${formatDate}${mo}${formatDate}${da}`;
-        }
-        function checkType(line, arrayType) {
-            for (i = 0; i < arrayType.length; i++) {
-                if (line.includes(`${arrayType[i]}`)) {
-                    return true
-                }
-            }
-            return false
-        }
         btnClean.addEventListener('click', () => {
             document.getElementById('output').textContent = '';
         })
@@ -237,6 +197,7 @@
         btnCoppy.addEventListener('click', () => {
             navigator.clipboard.writeText(document.getElementById('output').value);
         })
+
     </script>
 </body>
 
